@@ -361,8 +361,8 @@ int s2n_kem_recv_ciphertext(struct s2n_stuffer *in, struct s2n_kem_params *kem_p
     POSIX_GUARD(s2n_stuffer_read_uint16(in, &ciphertext_length));
     S2N_ERROR_IF(ciphertext_length != kem->ciphertext_length, S2N_ERR_BAD_MESSAGE);
 
-    const struct s2n_blob ciphertext = { 0 };
-    POSIX_GUARD(s2n_blob_init(&ciphertext, s2n_stuffer_raw_read(in, ciphertext_length), ciphertext_length));
+    const struct s2n_blob ciphertext = { s2n_stuffer_raw_read(in, ciphertext_length), ciphertext_length};
+
     POSIX_ENSURE_REF(ciphertext.data);
 
     /* Saves the shared secret in kem_params */
