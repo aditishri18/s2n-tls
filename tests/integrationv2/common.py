@@ -150,7 +150,6 @@ class Certificates(object):
     OCSP_ECDSA = Cert("OCSP_ECDSA_256", "ocsp/server_ecdsa")
 
 
-
 class Protocol(object):
     def __init__(self, name, value):
         self.name = name

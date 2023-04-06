@@ -32,7 +32,7 @@
  *  - https://tools.ietf.org/search/rfc4492#section-5.5
  */
 typedef enum {
-    S2N_CERT_TYPE_+RSA_SIGN = 1,
+    S2N_CERT_TYPE_RSA_SIGN = 1,
     S2N_CERT_TYPE_DSS_SIGN = 2,
     S2N_CERT_TYPE_RSA_FIXED_DH = 3,
     S2N_CERT_TYPE_DSS_FIXED_DH = 4,
