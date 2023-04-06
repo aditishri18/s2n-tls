@@ -343,14 +343,15 @@ def assert_downgrade(results, is_complete=True):
 #         # assert_gnutls_handshake_complete(results)
 #         # expected_gnutls_version = get_expected_gnutls_version(protocol)
 
-
-def test_client_auth_with_downgrade(managed_process):
+@pytest.mark.parametrize("cipher", TLS13_CIPHERS, ids=get_parameter_name)
+def test_client_auth_with_downgrade(managed_process, cipher):
     port = next(available_ports)
 
     random_bytes = data_bytes(64)
     client_options = ProviderOptions(
         mode=Provider.ClientMode,
         port=port,
+        cipher=cipher,
         data_to_send=random_bytes,
         use_client_auth=True,
         key=Certificates.RSA_2048_PKCS1.key,
@@ -364,6 +365,7 @@ def test_client_auth_with_downgrade(managed_process):
     server_options = ProviderOptions(
         mode=Provider.ServerMode,
         port=port,
+        cipher=cipher,
         protocol=Protocols.TLS13,
         key=Certificates.RSA_2048_PKCS1.key,
         cert=Certificates.RSA_2048_PKCS1.cert,
