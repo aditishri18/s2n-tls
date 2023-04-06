@@ -145,6 +145,7 @@ class Certificates(object):
         "RSA_2048_SHA256_WILDCARD", "rsa_2048_sha256_wildcard")
     RSA_PSS_2048_SHA256 = Cert(
         "RSA_PSS_2048_SHA256", "localhost_rsa_pss_2048_sha256")
+    RSA_2048_PKCS1 = Cert("RSA_2048_PKCS1", "rsa_2048_pkcs1")
 
     OCSP = Cert("OCSP_RSA", "ocsp/server")
     OCSP_ECDSA = Cert("OCSP_ECDSA_256", "ocsp/server_ecdsa")

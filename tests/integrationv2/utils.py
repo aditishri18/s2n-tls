@@ -45,11 +45,11 @@ def get_expected_gnutls_version(protocol):
     }.get(protocol.value)
 
 
-def check_downgrade_openssl(protocol):
+def check_downgrade_openssl():
     if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION):
         protocol = Protocols.TLS12.name
     else:
-        protocol = protocol.name
+        protocol = Protocols.TLS13.name
     return protocol
 
 
