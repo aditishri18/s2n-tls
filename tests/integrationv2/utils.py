@@ -1,6 +1,6 @@
 from common import Protocols
 from providers import S2N
-from global_flags import get_flag, S2N_FIPS_MODE
+from global_flags import get_flag, S2N_FIPS_MODE, S2N_PROVIDER_VERSION
 
 
 def to_bytes(val):
@@ -43,6 +43,14 @@ def get_expected_gnutls_version(protocol):
         Protocols.TLS12.value: "TLS1.2",
         Protocols.TLS13.value: "TLS1.3"
     }.get(protocol.value)
+
+
+def check_downgrade_openssl(protocol):
+    if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION):
+        protocol = Protocols.TLS12.name
+    else:
+        protocol = protocol.name
+    return protocol
 
 
 def get_parameter_name(item):
