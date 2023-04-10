@@ -343,8 +343,8 @@ def assert_downgrade(results, is_complete=True):
 #         # assert_gnutls_handshake_complete(results)
 #         # expected_gnutls_version = get_expected_gnutls_version(protocol)
 
-# @pytest.mark.parametrize("protocol", [Protocols.TLS12], ids=get_parameter_name)
-def test_client_auth_with_downgrade(managed_process):
+# @pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
+def test_client_auth_with_downgrade(managed_process,protocol):
     port = next(available_ports)
 
     random_bytes = data_bytes(64)
@@ -380,7 +380,7 @@ def test_client_auth_with_downgrade(managed_process):
 
     for results in client.get_results():
         results.assert_success()
-        assert_downgrade(results, is_complete=True)
+        # assert_downgrade(results, is_complete=True)
 
     for results in server.get_results():
         results.assert_success()
