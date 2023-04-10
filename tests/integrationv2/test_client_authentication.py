@@ -56,14 +56,23 @@ def assert_s2n_handshake_complete(results, protocol, provider, is_complete=True)
             expected_version)) not in results.stdout
 
 
-def assert_downgrade(results, is_complete=True):
-    protocol_name = check_downgrade_openssl()
-    if is_complete and protocol_name == Protocols.TLS12.name:
-        assert to_bytes("Actual protocol version: {}".format(
-                protocol_name)) in results.stdout
-    else:
-        assert to_bytes("Actual protocol version: {}".format(
-            protocol_name)) not in results.stdout
+# def assert_openssl_downgrade(results, is_complete=True):
+#     protocol_name = check_downgrade_openssl()
+#     if is_complete and protocol_name == Protocols.TLS12.name:
+#         assert b'read finished' in results.stderr
+#         assert b'write finished' in results.stderr
+#     else:
+#         assert b'read finished' not in results.stderr or b'write finished' not in results.stderr
+#
+#
+# def assert_s2n_downgrade(results, is_complete=True):
+#     protocol_name = check_downgrade_openssl()
+#     if is_complete and protocol_name == Protocols.TLS12.name:
+#         assert to_bytes("Actual protocol version: {}".format(
+#             protocol_name)) in results.stdout
+#     else:
+#         assert to_bytes("Actual protocol version: {}".format(
+#             protocol_name)) in results.stdout
 
 # def get_expected_downgrade_version(results, protocol, is_complete=True):
 #     dversion = get_downgrade(protocol)
@@ -344,7 +353,7 @@ def assert_downgrade(results, is_complete=True):
 #         # expected_gnutls_version = get_expected_gnutls_version(protocol)
 
 # @pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
-def test_client_auth_with_downgrade(managed_process,protocol):
+def test_client_auth_with_downgrade(managed_process):
     port = next(available_ports)
 
     random_bytes = data_bytes(64)
