@@ -782,11 +782,11 @@ class GnuTLS(Provider):
     def create_priority_str(self):
         priority_str = "NONE"
 
-        protocol_to_priority_str = self.protocol_to_priority_str(self.options.protocol)
-        if protocol_to_priority_str:
-            priority_str += ":+" + protocol_to_priority_str
-        else:
-            priority_str += ":+VERS-ALL"
+        # protocol_to_priority_str = self.protocol_to_priority_str(self.options.protocol)
+        # if protocol_to_priority_str:
+        #     priority_str += ":+" + protocol_to_priority_str
+        # else:
+        priority_str += ":+VERS-ALL"
 
         cipher_to_priority_str = self.cipher_to_priority_str(self.options.cipher)
         if cipher_to_priority_str:

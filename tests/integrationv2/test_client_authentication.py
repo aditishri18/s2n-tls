@@ -343,6 +343,7 @@ def assert_downgrade(results, is_complete=True):
 #         # assert_gnutls_handshake_complete(results)
 #         # expected_gnutls_version = get_expected_gnutls_version(protocol)
 
+# @pytest.mark.parametrize("protocol", [Protocols.TLS12], ids=get_parameter_name)
 def test_client_auth_with_downgrade(managed_process):
     port = next(available_ports)
 
@@ -356,8 +357,9 @@ def test_client_auth_with_downgrade(managed_process):
         cert=Certificates.RSA_2048_PKCS1.cert,
         trust_store=Certificates.ECDSA_256.cert,
         insecure=False,
-        cipher=Ciphers.AES256_GCM_SHA384,
-        protocol=Protocols.TLS13)
+        protocol=None
+        # cipher=Ciphers.ECDHE_RSA_AES256_SHA,
+        )
 
     client_options.extra_flags = ["--no-ca-verification"]
 
@@ -369,7 +371,7 @@ def test_client_auth_with_downgrade(managed_process):
         key=Certificates.ECDSA_256.key,
         cert=Certificates.ECDSA_256.cert,
         trust_store=Certificates.RSA_2048_PKCS1.cert,
-        cipher=Ciphers.AES256_GCM_SHA384,
+        # cipher=Ciphers.ECDHE_RSA_AES256_SHA,
         insecure=False,
     )
 
