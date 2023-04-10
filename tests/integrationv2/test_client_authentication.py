@@ -369,7 +369,7 @@ def test_client_auth_with_downgrade(managed_process):
         key=Certificates.ECDSA_256.key,
         cert=Certificates.ECDSA_256.cert,
         trust_store=Certificates.RSA_2048_PKCS1.cert,
-        # cipher=Ciphers.AES256_GCM_SHA384,
+        cipher=Ciphers.AES256_GCM_SHA384,
         insecure=False,
     )
 
