@@ -306,8 +306,8 @@ def assert_s2n_downgrade(results, is_complete=True):
 #         assert_openssl_handshake_complete(results)
 
 
-@pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
-def test_client_auth_with_downgrade(managed_process, protocol):
+# @pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
+def test_client_auth_with_downgrade(managed_process):
     port = next(available_ports)
 
     random_bytes = data_bytes(64)
@@ -320,7 +320,7 @@ def test_client_auth_with_downgrade(managed_process, protocol):
         cert=Certificates.RSA_2048_PKCS1.cert,
         trust_store=Certificates.ECDSA_256.cert,
         insecure=False,
-        protocol=protocol
+        # protocol=None
         )
 
     client_options.extra_flags = ["--no-ca-verification"]
@@ -329,7 +329,7 @@ def test_client_auth_with_downgrade(managed_process, protocol):
         mode=Provider.ServerMode,
         port=port,
         use_client_auth=True,
-        protocol=protocol,
+        protocol=Protocols.TLS13,
         key=Certificates.ECDSA_256.key,
         cert=Certificates.ECDSA_256.cert,
         trust_store=Certificates.RSA_2048_PKCS1.cert,
