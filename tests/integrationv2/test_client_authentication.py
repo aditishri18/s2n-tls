@@ -56,13 +56,29 @@ def assert_s2n_handshake_complete(results, protocol, provider, is_complete=True)
             expected_version)) not in results.stdout
 
 
-def assert_openssl_downgrade(results, is_complete=True):
-    protocol_name = check_downgrade_openssl()
-    if is_complete and protocol_name == Protocols.TLS12.name:
-        assert b'read finished' in results.stderr
-        assert b'write finished' in results.stderr
+# def assert_openssl_downgrade(results, is_complete=True):
+#     protocol_name = check_downgrade_openssl()
+#     if is_complete and protocol_name == Protocols.TLS12.name:
+#         assert b'read finished' in results.stderr
+#         assert b'write finished' in results.stderr
+#     else:
+#         assert b'read finished' not in results.stderr or b'write finished' not in results.stderr
+
+def check_downgrade(protocol):
+    """
+    s2nd and s2nc print a number for the negotiated TLS version.
+
+    provider is s2n's peer. If s2n tries to speak to s2n < tls13,
+    tls12 is always chosen. This is true even when the requested
+    protocol is less than tls12.
+    """
+    if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION):
+        version = '33'
     else:
-        assert b'read finished' not in results.stderr or b'write finished' not in results.stderr
+        version = protocol.value
+
+    return version
+
 
 
 def assert_s2n_downgrade(results, is_complete=True):
@@ -290,70 +306,8 @@ def assert_s2n_downgrade(results, is_complete=True):
 #         assert_openssl_handshake_complete(results)
 
 
-# @pytest.mark.uncollect_if(func=invalid_test_parameters)
-# @pytest.mark.parametrize("provider", [GnuTLS], ids=get_parameter_name)
-# @pytest.mark.parametrize("other_provider", [S2N], ids=get_parameter_name)
-# @pytest.mark.parametrize("protocol", [Protocols.TLS12], ids=get_parameter_name)
-# # @pytest.mark.parametrize("cipher", [Ciphers.], ids=get_parameter_name)
-# @pytest.mark.parametrize("certificate", ECDSA_CERT, ids=get_parameter_name)
-# @pytest.mark.parametrize("client_certificate", RSA_PKCS1_CERT, ids=get_parameter_name)
-# def test_client_auth_with_s2n_server(managed_process, provider, other_provider, protocol, certificate,
-#                                      client_certificate):
-#     port = next(available_ports)
-#
-#     random_bytes = data_bytes(64)
-#     client_options = ProviderOptions(
-#         mode=Provider.ClientMode,
-#         port=port,
-#         data_to_send=random_bytes,
-#         use_client_auth=True,
-#         key=client_certificate.key,
-#         cert=Certificates.RSA_2048_PKCS1.cert,
-#         trust_store=certificate.cert,
-#         insecure=False,
-#         protocol=protocol)
-#
-#     if provider == GnuTLS:
-#         # GnuTLS fails the CA verification. It must be run with this check disabled.
-#         client_options.extra_flags = ["--no-ca-verification"]
-#
-#     # server_options = copy.copy(client_options)
-#     # server_options.data_to_send = None
-#     # server_options.mode = Provider.ServerMode
-#     # server_options.key = certificate.key
-#     # server_options.cert = certificate.cert
-#     # server_options.trust_store = client_certificate.cert
-#
-#     server_options = ProviderOptions(
-#         mode=Provider.ServerMode,
-#         port=port,
-#         # cipher=cipher,
-#         protocol=protocol,
-#         key=client_certificate.key,
-#         cert=client_certificate.cert,
-#         trust_store=certificate.cert,
-#         insecure=False,
-#     )
-#
-#     server = managed_process(S2N, server_options, timeout=5)
-#     client = managed_process(provider, client_options, timeout=5)
-#
-#     for results in server.get_results():
-#         results.assert_success()
-#         # assert_s2n_handshake_complete(results, protocol, provider)
-#         # assert random_bytes in results.stdout
-#         # expected_tls_version = get_expected_s2n_version(protocol, provider)
-#         # assert to_bytes("Actual protocol version: {}".format(
-#         #     expected_tls_version)) in results.stdout
-#         # assert_downgrade(results, protocol, is_complete=True)
-#
-#     for results in client.get_results():
-#         results.assert_success()
-#         # assert_gnutls_handshake_complete(results)
-#         # expected_gnutls_version = get_expected_gnutls_version(protocol)
-
 @pytest.mark.parametrize("protocol", PROTOCOLS, ids=get_parameter_name)
-def test_client_auth_with_downgrade(managed_process,protocol):
+def test_client_auth_with_downgrade(managed_process, protocol):
     port = next(available_ports)
 
     random_bytes = data_bytes(64)
@@ -367,7 +321,6 @@ def test_client_auth_with_downgrade(managed_process,protocol):
         trust_store=Certificates.ECDSA_256.cert,
         insecure=False,
         protocol=protocol
-        # cipher=Ciphers.ECDHE_RSA_AES256_SHA,
         )
 
     client_options.extra_flags = ["--no-ca-verification"]
@@ -376,21 +329,24 @@ def test_client_auth_with_downgrade(managed_process,protocol):
         mode=Provider.ServerMode,
         port=port,
         use_client_auth=True,
-        protocol=Protocols.TLS13,
+        protocol=protocol,
         key=Certificates.ECDSA_256.key,
         cert=Certificates.ECDSA_256.cert,
         trust_store=Certificates.RSA_2048_PKCS1.cert,
-        # cipher=Ciphers.ECDHE_RSA_AES256_SHA,
         insecure=False,
     )
 
     server = managed_process(S2N, server_options, timeout=5)
     client = managed_process(GnuTLS, client_options, timeout=5)
 
+    downgrade_Successful = check_downgrade(protocol)
+
     for results in client.get_results():
         results.assert_success()
-        # assert_downgrade(results, is_complete=True)
+        # assert_gnutls_handshake_complete(results, is_complete=True)
 
     for results in server.get_results():
         results.assert_success()
         # assert_downgrade(results, is_complete=True)
+        assert to_bytes("Actual protocol version: {}".format(
+            )) in results.stdout
