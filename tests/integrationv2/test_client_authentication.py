@@ -8,7 +8,7 @@ from global_flags import get_flag, S2N_PROVIDER_VERSION
 from providers import Provider, S2N, GnuTLS, OpenSSL
 from test_signature_algorithms import skip_ciphers
 from utils import invalid_test_parameters, get_parameter_name, get_expected_s2n_version, to_bytes, \
-    check_downgrade_openssl
+    check_downgrade_openssl, get_expected_gnutls_version
 
 # If we test every available cert, the test takes too long.
 # Choose a good representative subset.
@@ -64,15 +64,9 @@ def assert_s2n_handshake_complete(results, protocol, provider, is_complete=True)
 #     else:
 #         assert b'read finished' not in results.stderr or b'write finished' not in results.stderr
 
-def check_downgrade(protocol):
-    """
-    s2nd and s2nc print a number for the negotiated TLS version.
+def check_downgrade(protocol, provider):
 
-    provider is s2n's peer. If s2n tries to speak to s2n < tls13,
-    tls12 is always chosen. This is true even when the requested
-    protocol is less than tls12.
-    """
-    if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION):
+    if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION) and not protocol == Protocols.TLS13 and provider == S2N:
         version = '33'
     else:
         version = protocol.value
@@ -80,34 +74,15 @@ def check_downgrade(protocol):
     return version
 
 
-
-def assert_s2n_downgrade(results, is_complete=True):
-    protocol_name = check_downgrade_openssl()
-    if is_complete and protocol_name == Protocols.TLS12.name:
+def assert_s2n_handshake_complete_with_downgrade(results, protocol, provider, is_complete=True):
+    expected_version = check_downgrade(protocol, provider)
+    if is_complete:
         assert to_bytes("Actual protocol version: {}".format(
-            protocol_name)) in results.stdout
+            expected_version)) in results.stdout
     else:
         assert to_bytes("Actual protocol version: {}".format(
-            protocol_name)) in results.stdout
+            expected_version)) not in results.stdout
 
-# def get_expected_downgrade_version(results, protocol, is_complete=True):
-#     dversion = get_downgrade(protocol)
-#     if is_complete:
-#         assert to_bytes("Actual protocol version: {}".format(
-#             dversion)) in results.stdout
-#     else:
-#         assert to_bytes("Actual protocol version: {}".format(
-#             dversion)) not in results.stdout
-#     return
-
-
-# def check_downgrade(results, protocol):
-#     protocolV = get_downgrade(protocol)
-#     if protocolV == Protocols.TLS12:
-#         assert to_bytes("Actual protocol version: {}".format(
-#             protocolV)) in results.stdout
-#     else:
-#         protocol == Protocols.TLS13
 
 
 # @pytest.mark.uncollect_if(func=invalid_test_parameters)
@@ -320,8 +295,7 @@ def test_client_auth_with_downgrade(managed_process):
         cert=Certificates.RSA_2048_PKCS1.cert,
         trust_store=Certificates.ECDSA_256.cert,
         insecure=False,
-        # protocol=None
-        )
+    )
 
     client_options.extra_flags = ["--no-ca-verification"]
 
@@ -339,14 +313,14 @@ def test_client_auth_with_downgrade(managed_process):
     server = managed_process(S2N, server_options, timeout=5)
     client = managed_process(GnuTLS, client_options, timeout=5)
 
+    server_version = get_expected_s2n_version(Protocols.TLS13, S2N)
     # downgrade_Successful = check_downgrade(protocol)
 
     for results in client.get_results():
         results.assert_success()
-        # assert_gnutls_handshake_complete(results, is_complete=True)
 
     for results in server.get_results():
         results.assert_success()
-        # assert_downgrade(results, is_complete=True)
-        # assert to_bytes("Actual protocol version: {}".format(
-        #     )) in results.stdout
+        assert_s2n_handshake_complete_with_downgrade(results, Protocols.TLS13, S2N, is_complete=True)
+
+

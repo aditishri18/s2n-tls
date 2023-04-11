@@ -1,3 +1,4 @@
+
 from common import Protocols
 from providers import S2N
 from global_flags import get_flag, S2N_FIPS_MODE, S2N_PROVIDER_VERSION
@@ -25,6 +26,7 @@ def get_expected_s2n_version(protocol, provider):
         version = protocol.value
 
     return version
+
 
 
 def get_expected_openssl_version(protocol):
