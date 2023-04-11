@@ -74,14 +74,24 @@ def check_downgrade(protocol, provider):
     return version
 
 
-def assert_s2n_handshake_complete_with_downgrade(results, protocol, provider, is_complete=True):
-    expected_version = check_downgrade(protocol, provider)
+def check(protocol):
+    if not protocol == Protocols.TLS13:
+        version = '33'
+    else:
+        version = protocol.value
+
+    return version
+
+
+def assert_s2n_handshake_complete_with_downgrade(results, protocol, is_complete=True):
+    expected_version = check(protocol)
     if is_complete:
         assert to_bytes("Actual protocol version: {}".format(
             expected_version)) in results.stdout
     else:
         assert to_bytes("Actual protocol version: {}".format(
             expected_version)) not in results.stdout
+
 
 
 
@@ -313,14 +323,17 @@ def test_client_auth_with_downgrade(managed_process):
     server = managed_process(S2N, server_options, timeout=5)
     client = managed_process(GnuTLS, client_options, timeout=5)
 
-    server_version = get_expected_s2n_version(Protocols.TLS13, S2N)
-    # downgrade_Successful = check_downgrade(protocol)
+    # server_version = assert_s2n_handshake_complete(results, Protocols.TLS13, S2N, is_complete=True)
+    # # downgrade_Successful = check_downgrade(protocol)
 
     for results in client.get_results():
         results.assert_success()
 
     for results in server.get_results():
         results.assert_success()
-        assert_s2n_handshake_complete_with_downgrade(results, Protocols.TLS13, S2N, is_complete=True)
-
+        # assert_s2n_handshake_complete_with_downgrade(results, Protocols.TLS13, S2N, is_complete=True)
+        if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION):
+            assert_s2n_handshake_complete_with_downgrade(results, Protocols.TLS13, is_complete=True)
+        else:
+            assert_s2n_handshake_complete(results, Protocols.TLS13, S2N, is_complete=True)
 

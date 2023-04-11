@@ -1,4 +1,3 @@
-
 from common import Protocols
 from providers import S2N
 from global_flags import get_flag, S2N_FIPS_MODE, S2N_PROVIDER_VERSION
