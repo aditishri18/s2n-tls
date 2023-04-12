@@ -27,7 +27,6 @@ def get_expected_s2n_version(protocol, provider):
     return version
 
 
-
 def get_expected_openssl_version(protocol):
     return {
         Protocols.TLS10.value: "TLSv1",
@@ -44,14 +43,6 @@ def get_expected_gnutls_version(protocol):
         Protocols.TLS12.value: "TLS1.2",
         Protocols.TLS13.value: "TLS1.3"
     }.get(protocol.value)
-
-
-def check_downgrade_openssl():
-    if "openssl-1.0.2" in get_flag(S2N_PROVIDER_VERSION):
-        protocol = Protocols.TLS12.name
-    else:
-        protocol = Protocols.TLS13.name
-    return protocol
 
 
 def get_parameter_name(item):
