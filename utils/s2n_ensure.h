@@ -33,7 +33,9 @@
 #define __S2N_ENSURE(cond, action) \
     do {                           \
         if (!(cond)) {             \
-            action;                \
+        {                          \
+                action;            \
+        }                          \
         }                          \
     } while (0)
 
